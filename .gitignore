@@ -4,3 +4,4 @@
 .ipynb_checkpoints
 /unet/
 /unet.zip
+.DS_Store
