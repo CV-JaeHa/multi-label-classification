@@ -1,2 +1,6 @@
 /.secret
 .idea
+/data/
+.ipynb_checkpoints
+/unet/
+/unet.zip
