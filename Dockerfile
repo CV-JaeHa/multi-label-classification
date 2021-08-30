@@ -4,7 +4,7 @@ RUN apt-get install -y install A
 
 FROM python:3.7.10-buster
 
-RUN pip install numpy pandas matplotlib jupyterlab
+RUN pip install numpy pandas matplotlib jupyterlab tqdm scikit-learn
 
 RUN pip3 install torch torchvision
 
