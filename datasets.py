@@ -39,8 +39,3 @@ print(f"ROOT_PATH : {ROOT_PATH}")
 print(f"model_path = {model_path}")
 print(f"train_data_path : {train_data_path}")
 print(f"test_data_path : {test_data_path}")
-
-# Set Device
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-print(f'device : {device}')
-print(torch.cuda.get_device_properties(device))
