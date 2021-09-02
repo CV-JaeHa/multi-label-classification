@@ -13,6 +13,11 @@ https://dacon.io/competitions/official/235697/overview/description
 3. 생성된 .secret 파일에서 token 값을 읽는다.
 4. 읽은 token으로 jupyter lab을 인증한다.
 
+### 개별 실행
+```
+docker run -i -t -d --name 이미지이름 컨테이너가될이름
+```
+
 ```shell
 # 서버 실행
 make run
