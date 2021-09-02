@@ -1,10 +1,14 @@
 FROM ubuntu:20.04
 
+FROM alpine
+RUN apk add --no-cache tzdata
+ENV TZ Asia/Seoul
+
 RUN apt-get install -y install A
 
 FROM python:3.7.10-buster
 
-RUN pip install numpy pandas matplotlib jupyterlab tqdm scikit-learn, time
+RUN pip install numpy pandas matplotlib jupyterlab tqdm scikit-learn
 
 RUN pip3 install torch torchvision
 
