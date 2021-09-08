@@ -41,8 +41,7 @@ print(f"seed : {seed}")
 
 # Set Path
 """ 해당 경로는 다음과 같은 구조를 가정합니다.
-data
-└── dirty_mnist
+───── multi-label-classification
      ├── model
      └── data
           ├── train_data
