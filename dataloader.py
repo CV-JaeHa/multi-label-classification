@@ -59,8 +59,10 @@ test_data_path = os.path.join(ROOT_PATH, 'data/test_data')
 print(f"ROOT_PATH : {ROOT_PATH}")
 print(f"model_path = {model_path}")
 print(f"train_data_path : {train_data_path}")
-print(f"test_data_path : {test_data_path}")
+print(f"test_data_path : {test_data_path}\n")
 
+# Set device
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 # Load Train Data
 
@@ -97,8 +99,66 @@ else:
 """
 
 if os.path.isfile('Imgs_numpy.npy'):
+    st = time.time()
     imgs = np.load('Imgs_Numpy.npy')
-    print(imgs.shape)
+    print(f"img shape : {imgs.shape}")
+    print(f"{int(time.time()-st)}sec\n")
 else:
     imgs = []
     for img_file in tqdm(imgs_path):
+        img = cv2.imread(img_file, cv2.IMREAD_COLOR)
+        imgs.append(img)
+    imgs = np.array(imgs)
+    np.save('Imgs_Numpy.npy', imgs)
+
+
+# Load train and validation index
+"""
+재현 등의 이슈에 대처하기 위해, KFold로 분리된 index를 file로 관리합니다.
+해당 파일이 없는 경우에는 KFold 수행 후 index를 가진 객체를 file로 저장하며,
+해당 파일이 있는 경우에는 List[Tuple[np.array, np.array]]형태로 파일을 로드합니다.
+이 방법으로 세션이나 런타임 종료 등의 이슈가 생기더라도 매번 동일한 데이터 사용을 보장합니다.
+"""
+
+if os.path.isfile('Train_KFold.pkl'):
+    with open('Train_KFold.pkl', 'rb') as f:
+        folds = pickle.load(f)
+else:
+    kf = KFold(n_splits=5, shuffle=True, random_state=seed)
+    folds = []
+    for train_idx, valid_idx in kf.split(imgs):
+        folds.append((train_idx, valid_idx))
+    with open('Train_KFold.pkl', 'wb') as f:
+        pickle.dump(folds, f)
+
+
+# Define Dataset
+"""
+메모리에 로드 되어 있는 np.array를 사용하는 Dataset을 정의합니다.
+이미지는 3개의 채널만 COLOR로 로드되어 있습니다.
+transform이 있는 경우에만 transform을 수행하며,
+label이 있는 경우에는 image와 label을 반환하고,
+label이 없는 경우에는 image만 반환합니다.
+"""
+
+class MnistDataset(Dataset):
+    def __init__(self, imgs=None, labels=None, transform=None):
+        self.imgs = imgs
+        self.labels = labels
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.imgs)
+
+    def __getitem__(self, idx):
+        img = self.imgs[idx]
+        # transform 이 있는 경우
+        if self.transform is not None:
+            img = self.transform(img)
+        # label이 있는 경우
+        if self.labels is not None:
+            label = torch.FloatTensor(self.labels[idx])
+            return img, label
+        # label이 없는 경우
+        else:
+            return img
