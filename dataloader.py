@@ -14,21 +14,11 @@ import pandas as pd
 import pandas as pd
 import numpy as np
 import cv2
-import os
-import PIL
-import random
-import glob
-import time
-import pickle
+import os, random, glob, time, pickle
 from tqdm import tqdm
 from sklearn.model_selection import KFold
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import torchvision.models as models
-import torchvision.transforms as T
-from torch.utils.data import DataLoader, Dataset
-from efficientnet_pytorch import EfficientNet
+from torch.utils.data import Dataset
 
 # Set random seed
 seed = 42
