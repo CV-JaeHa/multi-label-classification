@@ -32,7 +32,6 @@ print(f"seed : {seed}")
           └── test_data
                └── 50000~54999.png
 """
-
 os.chdir("./data/dirty_mnist")
 ROOT_PATH = os.getcwd()
 model_path = os.path.join(ROOT_PATH, 'model')
@@ -50,7 +49,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 # Load Train Data
 
 ## Load labels for train
-df_labels = pd.read_csv('data/dirty_mnist_2nd_answer.csv')
+df_labels = pd.read_csv("/Users/taki0412/Programing/Repository/multi-label-classification/data/dirty_mnist_2nd_answer.csv")
 labels = np.array(df_labels.values[:, 1:])
 # print(labels) # 라벨 구성 보기
 
@@ -60,7 +59,6 @@ labels = np.array(df_labels.values[:, 1:])
 해당 파일이 없는 경우에는 모든 데이터를 로드 한 후 file로 저장하며,
 해당 파일이 있는 경우에는 pkl file을 로드 합니다.
 """
-
 if os.path.isfile('Train_Img_path.pkl'):
     with open('Train_Img_path.pkl', 'rb') as f:
         imgs_path = pickle.load(f)
@@ -80,7 +78,6 @@ else:
 이 방법으로 평균 2~3분 남짓한 시간으로 이미지 파일을 로드할 수 있는 장점이 있습니다.
 단, file이 9GB이며 로드 시 메모리를 약 15GB 이상 사용합니다.
 """
-
 if os.path.isfile('Imgs_numpy.npy'):
     st = time.time()
     imgs = np.load('Imgs_Numpy.npy')
@@ -102,9 +99,8 @@ else:
 해당 파일이 있는 경우에는 List[Tuple[np.array, np.array]]형태로 파일을 로드합니다.
 이 방법으로 세션이나 런타임 종료 등의 이슈가 생기더라도 매번 동일한 데이터 사용을 보장합니다.
 """
-
-if os.path.isfile('Train_KFold.pkl'):
-    with open('Train_KFold.pkl', 'rb') as f:
+if os.path.isfile('Train_KFold.pkl') :
+    with open('Train_KFold.pkl', 'rb') as f :
         folds = pickle.load(f)
 else:
     kf = KFold(n_splits=5, shuffle=True, random_state=seed)
@@ -123,7 +119,6 @@ transform이 있는 경우에만 transform을 수행하며,
 label이 있는 경우에는 image와 label을 반환하고,
 label이 없는 경우에는 image만 반환합니다.
 """
-
 class MnistDataset(Dataset):
     def __init__(self, imgs=None, labels=None, transform=None):
         self.imgs = imgs
