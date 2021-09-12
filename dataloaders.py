@@ -32,9 +32,10 @@ print(f"seed : {seed}")
           └── test_data
                └── 50000~54999.png
 """
-os.chdir("./data/dirty_mnist")
+os.chdir("./")
 ROOT_PATH = os.getcwd()
 model_path = os.path.join(ROOT_PATH, 'model')
+data_path = os.path.join(ROOT_PATH, 'data')
 train_data_path = os.path.join(ROOT_PATH, 'data/train_data')
 test_data_path = os.path.join(ROOT_PATH, 'data/test_data')
 
@@ -49,7 +50,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 # Load Train Data
 
 ## Load labels for train
-df_labels = pd.read_csv("/Users/taki0412/Programing/Repository/multi-label-classification/data/dirty_mnist_2nd_answer.csv")
+df_labels = pd.read_csv(data_path + "/dirty_mnist_2nd_answer.csv")
 labels = np.array(df_labels.values[:, 1:])
 # print(labels) # 라벨 구성 보기
 
