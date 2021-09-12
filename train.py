@@ -1,22 +1,10 @@
 # Import Library
-import pandas as pd
 import numpy as np
-import cv2
-import os
-import PIL
-import random
-import glob
-import time
-import pickle
+import os, glob
 from tqdm import tqdm
-from sklearn.model_selection import KFold
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import torchvision.models as models
 import torchvision.transforms as T
-from torch.utils.data import DataLoader, Dataset
-from efficientnet_pytorch import EfficientNet
+from torch.utils.data import DataLoader
 import dataloaders as dl
 import models as md
 
@@ -94,3 +82,67 @@ for fold in now_train_fold :
     train_loader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
     valid_loader = DataLoader(dataset=valid_dataset, batch_size=batch_size//4, shuffle=False)
 
+    valid_loss_min = 999 ### 체크포인트에서 시작된 경우 이 값을 최상의 모델 손실로 변경합니다(예: valid_loss_min = 0.120).
+    for epoch in range(epochs):
+        if epoch <= -1: ### 만약 체크포인트에서 시작한다면 이것을 지금 가장 좋은 모델로 바꾸세요. (ex. epoch <= 24)
+            continue
+
+        ## Train
+        train_acc_list = []
+        train_loss_list = []
+        with tqdm(train_loader,
+                  total=train_loader.__len__(), unit='batch') as train_bar :
+            for img, label in train_bar :
+                train_bar.set_description(f"Train Epoch {epoch+1} / {epochs}")
+                X = img.to(dl.device)
+                y = label.to(dl.device)
+
+                optimizer.zero_grad()
+                model.train()
+                y_probs = model(X)
+                loss = criterion(y_probs, y)
+                loss.backward()
+                optimizer.step()
+
+                y_probs = y_probs.cpu().detach().numpy()
+                label = label.detach().numpy()
+                y_preds = y_probs > 0.5
+                batch_acc = (label == y_preds).mean()
+                train_acc_list.append(batch_acc)
+                train_acc = np.mean(train_acc_list)
+                train_loss_list.append(loss.item())
+                train_loss = np.mean(train_loss_list)
+                train_bar.set_postfix(train_loss = train_loss, train_acc = train_acc)
+
+        ## Valid
+        valid_acc_list = []
+        valid_loss_list = []
+        with tqdm(valid_loader, total=valid_loader.__len__(), unit='batch') as valid_bar :
+            for img, label in valid_bar :
+                valid_bar.set_description(f"Valid Epoch {epoch+1} / {epochs}")
+                X = img.to(dl.device)
+                y = label.to(dl.device)
+
+                optimizer.zero_grad()
+                model.eval()
+                y_probs = model(X)
+                loss = criterion(y_probs, y)
+
+                y_probs = y_probs.cpu().detach().numpy()
+                label = label.detach().numpy()
+                y_preds = y_probs > 0.5
+                batch_acc = (label == y_preds).mean()
+                valid_acc_list.append(batch_acc)
+                valid_acc = np.mean(valid_loss_list)
+                valid_loss_list.append(loss.item())
+                valid_loss = np.mean(valid_loss_list)
+                valid_bar.set_postfix(valid_loss = valid_loss, valid_acc = valid_acc)
+
+            lr_scheduler_step()
+
+            if valid_loss < valid_loss_min :
+                valid_loss_min = valid_loss
+                for f in glob.glob(os.path.join(dl.model_path, str(fold)+'*_silu.pth')) : ### 만약 모델을 다른걸 쓰고 싶으시면 이것을 변경하세요.
+                    open(os.path.join(dl.model_path, f), 'w').close()
+                    os.remove(os.path.join(dl.model_path, f))
+                torch.save(model.state_dict(), f"{dl.model_path}/{fold}fold_{epoch}epoch_{valid_loss:2.4f}_silu.pth") ### 만약 모델을 다른걸 쓰고 싶으시면 이것을 변경하세요.
