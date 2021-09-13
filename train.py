@@ -1,6 +1,6 @@
 # Import Library
 import numpy as np
-import os, glob
+import os, glob, random
 from tqdm import tqdm
 import torch
 import torch.nn as nn
@@ -8,6 +8,18 @@ import torchvision.transforms as T
 from torch.utils.data import DataLoader
 import dataloaders as dl
 import models as md
+
+#  Set random Seed
+seed = 42
+random.seed(seed)
+np.random.seed(seed)
+torch.manual_seed(seed)
+torch.cuda.manual_seed_all(seed)
+os.environ["PYTHONHASHSEED"] = str(seed)
+torch.backends.cudnn.deterministic = True
+torch.backends.cudnn.benchmark = True
+print(f'seed : {seed}')
+
 
 # Set Train Options
 
@@ -70,7 +82,7 @@ valid_loss가 valid_loss_min보다 작은 경우 더 좋은 모델로 판단하�
 for fold in now_train_folds:
     # Modeling
     model = md.MnistEfficientNet(in_channels=3).to(dl.device)
-    # model.load_state_dict(torch.load(''))  ## if started in checkpoint change this to best model of now fold (ex. 'model/4fold_24epoch_0.1989_silu.pth')
+    # model.load_state_dict(torch.load(''))  ### 체크포인트에서 시작할 경우 이 값을 최상의 now fold로 변경합니다. (ex. 'model/4fold_24epoch_0.1989_silu.pth')
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     lr_scheduler = torch.optim.lr_scheduler.StepLR(
         optimizer, step_size=lr_scheduler_step, gamma=lr_scheduler_gamma)
@@ -84,16 +96,14 @@ for fold in now_train_folds:
     train_loader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
     valid_loader = DataLoader(dataset=valid_dataset, batch_size=batch_size // 4, shuffle=False)
 
-    valid_loss_min = 999  ## if started in checkpoint change this to best model's loss (ex. valid_loss_min = 0.1989)
+    valid_loss_min = 999  ### 체크포인트에서 시작할 경우 이 값을 최상의 loss로 변경합니다. (ex. valid_loss_min = 0.1989)
     for epoch in range(epochs):
-        if epoch <= -1:  ## if started in checkpoint change this to best model's epoch (ex. epoch <= 24)
+        if epoch <= -1:  ### 체크포인트에서 시작할 경우 이 값을 최상의 epoch으로 변경합니다. (ex. epoch <= 24)
             continue
         # Train
         train_acc_list = []
         train_loss_list = []
-        with tqdm(train_loader,
-                  total=train_loader.__len__(),
-                  unit='batch') as train_bar:
+        with tqdm(train_loader, total=train_loader.__len__(), unit='batch') as train_bar:
             for img, label in train_bar:
                 train_bar.set_description(f'Train Epoch {epoch + 1} / {epochs}')
                 X = img.to(dl.device)
@@ -102,6 +112,8 @@ for fold in now_train_folds:
                 optimizer.zero_grad()
                 model.train()
                 y_probs = model(X)
+                print(f"input : {y_probs}, output : {y}")
+
                 loss = criterion(y_probs, y)
                 loss.backward()
                 optimizer.step()
@@ -147,4 +159,4 @@ for fold in now_train_folds:
             for f in glob.glob(os.path.join(dl.model_path, str(fold) + '*_silu.pth')):  ### 만약 다른 모델을 사용하고 싶다면 이것을 변경하세요.
                 open(os.path.join(dl.model_path, f), 'w').close()
                 os.remove(os.path.join(dl.model_path, f))
-            torch.save(model.state_dict(), f'{dl.model_path}/{fold}fold_{epoch}epoch_{valid_loss:2.4f}_silu.pth') ### 만약 모델을 다른걸 쓰고 싶으시면 이것을 변경하세요.
+            torch.save(model.state_dict(), f'{dl.model_path}/{fold}fold_{epoch}epoch_{valid_loss:2.4f}_silu.pth') ### 만약 모델을 다른걸 쓰고 싶으시면 이것을 변경하세요."""
