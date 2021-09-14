@@ -156,7 +156,7 @@ for fold in now_train_folds:
 
         if valid_loss < valid_loss_min:
             valid_loss_min = valid_loss
-            for f in glob.glob(os.path.join(dl.model_path, str(fold) + '*_silu.pth')):  ### 만약 다른 모델을 사용하고 싶다면 이것을 변경하세요.
+            for f in glob.glob(os.path.join(dl.model_path, '*_silu.pth')):  ### 만약 다른 모델을 사용하고 싶다면 이것을 변경하세요.
                 open(os.path.join(dl.model_path, f), 'w').close()
                 os.remove(os.path.join(dl.model_path, f))
             torch.save(model.state_dict(), f'{dl.model_path}/{fold}fold_{epoch}epoch_{valid_loss:2.4f}_silu.pth') ### 만약 모델을 다른걸 쓰고 싶으시면 이것을 변경하세요."""
