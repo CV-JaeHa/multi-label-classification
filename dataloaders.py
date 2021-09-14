@@ -62,7 +62,7 @@ print(f'device : {device}')
 ## Load labels for train
 df_labels = pd.read_csv(data_path + '/dirty_mnist_2nd_answer.csv')
 labels = np.array(df_labels.values[:, 1:])
-print((labels)) # 라벨 구성 보기
+# print((labels)) # 라벨 구성 보기
 
 ## Set Images Path
 """
