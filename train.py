@@ -112,7 +112,7 @@ for fold in now_train_folds:
                 optimizer.zero_grad()
                 model.train()
                 y_probs = model(X)
-                print(f"input : {y_probs}, output : {y}")
+                # print(f"input : {y_probs}, output : {y}")
 
                 loss = criterion(y_probs, y)
                 loss.backward()
@@ -127,6 +127,10 @@ for fold in now_train_folds:
                 train_loss_list.append(loss.item())
                 train_loss = np.mean(train_loss_list)
                 train_bar.set_postfix(train_loss=train_loss, train_acc=train_acc)
+
+                # 학습 데이터 삭제
+                # del train_dataset
+                torch.cuda.empty_cache() # GPU 캐시 데이터 삭제
 
         # Valid
         valid_acc_list = []
@@ -151,6 +155,10 @@ for fold in now_train_folds:
                 valid_loss_list.append(loss.item())
                 valid_loss = np.mean(valid_loss_list)
                 valid_bar.set_postfix(valid_loss=valid_loss, valid_acc=valid_acc)
+
+                # 테스트 데이터 삭제
+                # del valid_dataset
+                torch.cuda.empty_cache()  # GPU 캐시 데이터 삭제
 
         lr_scheduler.step()
 
