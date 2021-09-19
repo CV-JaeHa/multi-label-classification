@@ -51,8 +51,8 @@ print(f"test_data_path : {test_data_path}\n")
 
 
 # Set device
-# device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-device = torch.device("cpu")
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+# device = torch.device("cpu")
 print(f'device : {device}')
 # print(torch.cuda.get_device_properties(device))
 
