@@ -5,3 +5,4 @@
 /unet.zip
 .DS_Store
 path.py
+__pycache__
