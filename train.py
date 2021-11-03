@@ -8,6 +8,7 @@ import torchvision.transforms as T
 from torch.utils.data import DataLoader
 import dataloaders as dl
 import models as md
+import gc
 
 #  Set random Seed
 seed = 42
@@ -51,7 +52,7 @@ valid_transform = T.Compose([
 모델의 크기와 resize와 같은 이유로 작은 batch size를 사용했습니다.
 세션의 종료 등의 이슈로 체크포인트로부터 학습을 재개하는 경우 lr의 값을 변경할 필요가 있습니다.
 """
-batch_size = 8
+batch_size = 4
 lr = 0.001 ### 체크 포인트에서 시작하면 이것을 변경하세요. (ex. lr = 0.001 * (0.75 ** 5))
 epochs = 25
 lr_scheduler_step = 5
@@ -66,6 +67,7 @@ lr_scheduler_gamma = 0.75
 이를 통해 여러 모델이 동시에 각 fold로 학습을 수행할 수 있습니다. 
 """
 now_train_folds = [0, 1, 2, 3, 4] ### 체크 포인트에서 시작하면 이것을 변경하세요. (ex. now_train_folds = [4])
+gc.collect()
 torch.cuda.empty_cache()
 
 ## Train in fold
@@ -74,12 +76,13 @@ torch.cuda.empty_cache()
 체크포인트를 로드 할 수 있도록 파일 명을 기재해야 합니다. (model directory 참고)
 체크포인트의 val_loss값을 valid_loss_min으로 설정해야 합니다.
 체크포인트의 epoch만큼 pass 한 후 학습되도록 설정해야 합니다.
-
 validation 수행 시 해당 epoch의 평균 loss가 계산되도록 설정해야 합니다.
 valid_loss가 valid_loss_min보다 작은 경우 더 좋은 모델로 판단하고,
 해당 폴드의 이전 모델을 0byte로 만들고 삭제한 후 모델의 state_dict를 저장합니다.
 """
 for fold in now_train_folds:
+    gc.collect()
+    torch.cuda.empty_cache() # GPU 캐시 데이터 삭제
     # Modeling
     model = md.MnistEfficientNet(in_channels=3).to(dl.device)
     # model.load_state_dict(torch.load(''))  ### 체크포인트에서 시작할 경우 이 값을 최상의 now fold로 변경합니다. (ex. 'model/4fold_24epoch_0.1989_silu.pth')
@@ -130,6 +133,7 @@ for fold in now_train_folds:
 
                 # 학습 데이터 삭제
                 # del train_dataset
+                gc.collect()
                 torch.cuda.empty_cache() # GPU 캐시 데이터 삭제
 
         # Valid
@@ -158,6 +162,7 @@ for fold in now_train_folds:
 
                 # 테스트 데이터 삭제
                 # del valid_dataset
+                gc.collect()
                 torch.cuda.empty_cache()  # GPU 캐시 데이터 삭제
 
         lr_scheduler.step()
