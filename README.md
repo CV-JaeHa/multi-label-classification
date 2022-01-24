@@ -8,7 +8,7 @@ https://dacon.io/competitions/official/235697/overview/description
 ```
 
 # Installation
-Please check Installation procedure in [Install.md](https://github.com/CV-JaeHa/virtual-environment-list/blob/main/torchcv.md)
+Please check Installation procedure in [INSTALL.md](https://github.com/cv-jaeha/multi-label-classification/blob/main/INSTALL.md)
 
 ## Reference
 
